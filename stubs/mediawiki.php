@@ -27,6 +27,7 @@ namespace {
     {
         public function getTitle(): \MediaWiki\Title\Title {}
         public function getContent(): \MWContent {}
+        public function getId(): int {}
     }
 
     class User
@@ -75,13 +76,53 @@ namespace {
     {
         public function setHook(string $tag, callable $callback): void {}
         public function getOutput(): \ParserOutput {}
-        public function recursiveTagParse(string $text, \PPFrame $frame): string {}
+        public function recursiveTagParse(string $text, \PPFrame|false $frame = false): string {}
+        public function getTitle(): \MediaWiki\Title\Title {}
+        public function getRevisionId(): ?int {}
+        public function makeImage(\MediaWiki\Title\Title $title, string $options = ''): string {}
     }
 
     class ParserOutput
     {
         public function updateCacheExpiry(int $seconds): void {}
         public function addHeadItem(string $section, string $tag = ''): void {}
+        /** @param string[] $modules */
+        public function addModules(array $modules): void {}
+        public function addImage(string $name, mixed $timestamp = false, mixed $sha1 = false): void {}
+        public function addLink(\MediaWiki\Title\Title $title, ?int $id = null): void {}
+        public function addExternalLink(string $url): void {}
+    }
+
+    class ExtensionRegistry
+    {
+        public static function getInstance(): self {}
+        public function isLoaded(string $name): bool {}
+    }
+
+    class Xml
+    {
+        public static function element(string $element, ?array $attribs = null, string $contents = '', bool $allowShortTag = true): string {}
+    }
+
+    class Message
+    {
+        public function inContentLanguage(): self {}
+        public function text(): string {}
+    }
+
+    function wfMessage(string $key, mixed ...$params): \Message {}
+
+    class RepoGroup
+    {
+        public function findFile(\MediaWiki\Title\Title|string $title): \File|false {}
+    }
+
+    class File
+    {
+        public function getMimeType(): string {}
+        public function getWidth(): int {}
+        public function getHeight(): int {}
+        public function exists(): bool {}
     }
 
 }
@@ -93,6 +134,17 @@ namespace MediaWiki\Title {
         public function getBaseText(): string {}
         public function inNamespace(int $ns): bool {}
         public function getPrefixedText(): string {}
+        public static function newFromText(?string $text, int $defaultNamespace = 0): ?self {}
+        public function getNamespace(): int {}
+        public function getDBkey(): string {}
+        public function getFullText(): string {}
+        public function isExternal(): bool {}
+        public function getPrefixedDBkey(): string {}
+        public function getFragment(): string {}
+        public function getFragmentForURL(): string {}
+        public function getLocalURL(): string {}
+        public function getPrefixedURL(): string {}
+        public function getArticleID(): int {}
     }
 
 }
@@ -103,6 +155,7 @@ namespace MediaWiki {
     {
         public static function getInstance(): self {}
         public function getConnectionProvider(): \Wikimedia\Rdbms\IConnectionProvider {}
+        public function getRepoGroup(): \RepoGroup {}
     }
 
 }
@@ -161,6 +214,32 @@ namespace Wikimedia\Rdbms {
             array $options = [],
             array $join_conds = []
         ): \Wikimedia\Rdbms\IResultWrapper;
+    }
+
+}
+
+namespace Aws {
+
+    class StreamBody
+    {
+        public function getContents(): string {}
+    }
+
+    class Result
+    {
+        public function get(string $key): \Aws\StreamBody {}
+    }
+
+}
+
+namespace Aws\S3 {
+
+    class S3Client
+    {
+        /** @param mixed[] $args */
+        public function getObject(array $args): \Aws\Result {}
+        /** @param mixed[] $args */
+        public function putObject(array $args): \Aws\Result {}
     }
 
 }
