@@ -59,15 +59,33 @@ namespace {
         public function register(string $name, array $info): void {}
     }
 
+    class MWException extends \Exception {}
+
+    interface PPFrame
+    {
+        /** @return array<string, mixed> */
+        public function getNamedArguments(): array;
+    }
+
+    class PPTemplateFrame_Hash implements PPFrame
+    {
+        public int $depth;
+
+        /** @return array<string, mixed> */
+        public function getNamedArguments(): array {}
+    }
+
     class Parser
     {
         public function setHook(string $tag, callable $callback): void {}
         public function getOutput(): \ParserOutput {}
+        public function recursiveTagParse(string $text, \PPFrame $frame): string {}
     }
 
     class ParserOutput
     {
         public function updateCacheExpiry(int $seconds): void {}
+        public function addHeadItem(string $section, string $tag = ''): void {}
     }
 
 }
