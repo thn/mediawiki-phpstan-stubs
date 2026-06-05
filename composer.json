@@ -1,0 +1,17 @@
+{
+    "name": "thn/mediawiki-phpstan-stubs",
+    "description": "MediaWiki PHPStan stubs for use with PHPStan static analysis",
+    "type": "phpstan-extension",
+    "license": "MIT",
+    "require": {
+        "phpstan/phpstan": "^2.1"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.45-dev"
+        },
+        "phpstan": {
+            "includes": ["extension.neon"]
+        }
+    }
+}
