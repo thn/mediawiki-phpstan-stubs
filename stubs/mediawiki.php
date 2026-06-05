@@ -53,11 +53,7 @@ namespace {
         public function getResult(): \ApiResult {}
     }
 
-    class ResourceLoader
-    {
-        /** @param mixed[] $info */
-        public function register(string $name, array $info): void {}
-    }
+    class ResourceLoader extends \MediaWiki\ResourceLoader\ResourceLoader {}
 
     class MWException extends \Exception {}
 
@@ -107,6 +103,16 @@ namespace MediaWiki {
     {
         public static function getInstance(): self {}
         public function getConnectionProvider(): \Wikimedia\Rdbms\IConnectionProvider {}
+    }
+
+}
+
+namespace MediaWiki\ResourceLoader {
+
+    class ResourceLoader
+    {
+        /** @param mixed[] $info */
+        public function register(string $name, array $info): void {}
     }
 
 }
