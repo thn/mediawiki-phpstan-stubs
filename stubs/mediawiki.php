@@ -14,9 +14,12 @@ namespace {
 
     class SkinTemplate
     {
-        public string $skinname;
-        public string $stylename;
-        public string $template;
+        /** @var string */
+        public $skinname;
+        /** @var string */
+        public $stylename;
+        /** @var string */
+        public $template;
 
         public function __construct(string $skinname) {}
         public function initPage(\MediaWiki\Output\OutputPage $out): void {}
