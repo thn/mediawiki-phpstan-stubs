@@ -308,6 +308,16 @@ namespace MediaWiki\HookContainer {
 
 }
 
+namespace MediaWiki\Hook {
+
+    interface ParserFirstCallInitHook
+    {
+        /** @param \Parser $parser */
+        public function onParserFirstCallInit($parser);
+    }
+
+}
+
 namespace MediaWiki\Watchlist {
 
     class WatchlistManager
