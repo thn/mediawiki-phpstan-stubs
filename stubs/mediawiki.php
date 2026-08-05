@@ -88,6 +88,8 @@ namespace {
     {
         /** @return string[] */
         public function getValueNames(): array {}
+        public function getVal(string $name, mixed $default = null): mixed {}
+        public function getCheck(string $name): bool {}
     }
 
     class ApiResult
@@ -103,9 +105,19 @@ namespace {
         public function getResult(): \ApiResult {}
     }
 
+    class ApiBase
+    {
+        public function getModuleName(): string {}
+        public function getRequest(): \WebRequest {}
+    }
+
+    class ApiQueryBase extends ApiBase {}
+
     class ResourceLoader extends \MediaWiki\ResourceLoader\ResourceLoader {}
 
     class MWException extends \Exception {}
+
+    class UserNotLoggedIn extends \Exception {}
 
     interface PPFrame
     {
@@ -332,6 +344,11 @@ namespace MediaWiki\Permissions {
     class GroupPermissionsLookup
     {
         public function groupHasPermission(string $group, string $permission): bool {}
+    }
+
+    interface Authority
+    {
+        public function isRegistered(): bool;
     }
 
 }
