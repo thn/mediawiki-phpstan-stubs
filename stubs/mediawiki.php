@@ -383,6 +383,15 @@ namespace MediaWiki\EditPage {
 
 }
 
+namespace MediaWiki\Content {
+
+    interface Content
+    {
+        public function getNativeData();
+    }
+
+}
+
 namespace Wikimedia\Rdbms {
 
     interface IConnectionProvider
