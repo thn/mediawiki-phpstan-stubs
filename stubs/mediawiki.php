@@ -233,6 +233,26 @@ namespace MediaWiki {
         public function getHookContainer(): \MediaWiki\HookContainer\HookContainer {}
         public function getWatchlistManager(): \MediaWiki\Watchlist\WatchlistManager {}
         public function getGroupPermissionsLookup(): \MediaWiki\Permissions\GroupPermissionsLookup {}
+        public function getRevisionLookup(): \MediaWiki\Revision\RevisionLookup {}
+    }
+
+}
+
+namespace MediaWiki\Revision {
+
+    class SlotRecord
+    {
+        public const MAIN = 'main';
+    }
+
+    interface RevisionRecord
+    {
+        public function getContent(string $role): ?\MediaWiki\Content\Content;
+    }
+
+    interface RevisionLookup
+    {
+        public function getRevisionByTitle(\MediaWiki\Title\Title $title, int $revId = 0, int $flags = 0): ?RevisionRecord;
     }
 
 }
