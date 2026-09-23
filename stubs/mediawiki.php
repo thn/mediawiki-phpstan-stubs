@@ -248,6 +248,7 @@ namespace MediaWiki\Output {
         public function addHTML(string $html): void {}
         public function getTitle(): \MediaWiki\Title\Title {}
         public function headElement(\SkinTemplate $skin): string {}
+        public function getBottomScripts(): string {}
     }
 
 }
