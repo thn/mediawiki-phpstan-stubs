@@ -362,6 +362,31 @@ namespace MediaWiki\ResourceLoader {
         public function register(string $name, array $info): void {}
     }
 
+    class Context {}
+
+    abstract class Module
+    {
+        public const LOAD_STYLES = 'styles';
+        public const LOAD_GENERAL = 'general';
+        public const ORIGIN_CORE_SITEWIDE = 1;
+        public const ORIGIN_USER_SITEWIDE = 3;
+
+        /** @param mixed[]|null $options */
+        public function __construct(?array $options = null) {}
+
+        /** @return string|mixed[] */
+        public function getScript(Context $context) {}
+
+        /** @return mixed[] */
+        public function getStyles(Context $context) {}
+
+        /** @return string */
+        public function getType() {}
+
+        /** @return bool */
+        public function enableModuleContentVersion() {}
+    }
+
 }
 
 namespace MediaWiki\Request {
