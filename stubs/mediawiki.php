@@ -228,6 +228,20 @@ namespace MediaWiki {
         public function getRevisionLookup(): \MediaWiki\Revision\RevisionLookup {}
     }
 
+    class MainConfigNames
+    {
+        public const EnableBotPasswords = 'EnableBotPasswords';
+    }
+
+}
+
+namespace MediaWiki\Settings {
+
+    class SettingsBuilder
+    {
+        public function overrideConfigValue(string $key, mixed $value): self {}
+    }
+
 }
 
 namespace MediaWiki\Revision {
