@@ -514,6 +514,8 @@ namespace MediaWiki\User {
         public function getEmailAuthenticationTimestamp(): ?string {}
         public function setEmail(string $str): void {}
         public function setEmailAuthenticationTimestamp(?string $timestamp): void {}
+        public function getRealName(): string {}
+        public function setRealName(string $str): void {}
         public function saveSettings(): void {}
         public function getInstanceFromPrimary(int $loadFlags = 1): ?self {}
     }
