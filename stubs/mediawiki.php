@@ -361,6 +361,40 @@ namespace MediaWiki\Hook {
         public function onParserFirstCallInit($parser);
     }
 
+    interface BeforeInitializeHook
+    {
+        /**
+         * @param \MediaWiki\Title\Title $title
+         * @param null $unused
+         * @param \MediaWiki\Output\OutputPage $output
+         * @param \MediaWiki\User\User $user
+         * @param \MediaWiki\Request\WebRequest $request
+         * @param \MediaWiki\Actions\ActionEntryPoint $mediaWikiEntryPoint
+         * @return bool|void
+         */
+        public function onBeforeInitialize($title, $unused, $output, $user, $request, $mediaWikiEntryPoint);
+    }
+
+    interface ApiBeforeMainHook
+    {
+        /**
+         * @param \MediaWiki\Api\ApiMain $main
+         * @return bool|void
+         */
+        public function onApiBeforeMain(&$main);
+    }
+
+    interface UserLogoutCompleteHook
+    {
+        /**
+         * @param \MediaWiki\User\User $user
+         * @param string $inject_html
+         * @param string $oldName
+         * @return bool|void
+         */
+        public function onUserLogoutComplete($user, &$inject_html, $oldName);
+    }
+
 }
 
 namespace MediaWiki\Watchlist {
@@ -434,6 +468,22 @@ namespace MediaWiki\Request {
          * @return array<string, string>
          */
         public function getAllHeaders(): array {}
+        public function getCookie(string $key, ?string $prefix = null, mixed $default = null): mixed {}
+        public function getSession(): \MediaWiki\Session\Session {}
+        public function response(): WebResponse {}
+    }
+
+    class WebResponse
+    {
+        /**
+         * @param array<string, mixed> $options
+         */
+        public function setCookie(string $name, string $value, ?int $expire = 0, array $options = []): void {}
+
+        /**
+         * @param array<string, mixed> $options
+         */
+        public function clearCookie(string $name, array $options = []): void {}
     }
 
     class FauxRequest extends \WebRequest
@@ -532,6 +582,8 @@ namespace MediaWiki\User {
         public function setRealName(string $str): void {}
         public function saveSettings(): void {}
         public function getInstanceFromPrimary(int $loadFlags = 1): ?self {}
+        public function getRequest(): \MediaWiki\Request\WebRequest {}
+        public function doLogout(): void {}
     }
 
     interface UserRigorOptions
@@ -545,6 +597,49 @@ namespace MediaWiki\User {
     class UserNameUtils implements UserRigorOptions
     {
         public function getCanonical(string $name, string $validate = self::RIGOR_VALID): string|false {}
+    }
+
+}
+
+namespace MediaWiki\Session {
+
+    class Session
+    {
+        public function get(string $key, mixed $default = null): mixed {}
+        public function set(string $key, mixed $value): void {}
+        public function remove(string $key): void {}
+        public function shouldRememberUser(): bool {}
+        public function getProvider(): SessionProvider {}
+    }
+
+    abstract class SessionProvider
+    {
+        public function getRememberUserDuration(): ?int {}
+    }
+
+}
+
+namespace MediaWiki\Api {
+
+    class ApiMain
+    {
+        public function getRequest(): \MediaWiki\Request\WebRequest {}
+        public function getUser(): \MediaWiki\User\User {}
+    }
+
+}
+
+namespace MediaWiki\Actions {
+
+    class ActionEntryPoint {}
+
+}
+
+namespace MediaWiki\Logger {
+
+    class LoggerFactory
+    {
+        public static function getInstance(string $channel): \Psr\Log\LoggerInterface {}
     }
 
 }
