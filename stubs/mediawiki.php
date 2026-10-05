@@ -78,19 +78,9 @@ namespace {
         public function getId(): int {}
     }
 
-    class User
-    {
-        public function isAllowed(string $permission): bool {}
-        public function isRegistered(): bool {}
-    }
+    class User extends \MediaWiki\User\User {}
 
-    class WebRequest
-    {
-        /** @return string[] */
-        public function getValueNames(): array {}
-        public function getVal(string $name, mixed $default = null): mixed {}
-        public function getCheck(string $name): bool {}
-    }
+    class WebRequest extends \MediaWiki\Request\WebRequest {}
 
     class ApiResult
     {
@@ -165,15 +155,16 @@ namespace {
         public static function element(string $element, ?array $attribs = null, string $contents = '', bool $allowShortTag = true): string {}
     }
 
-    class Message
-    {
-        public function inContentLanguage(): self {}
-        public function text(): string {}
-        public function exists(): bool {}
-        public function escaped(): string {}
-    }
+    class Message extends \MediaWiki\Message\Message {}
 
     function wfMessage(string $key, mixed ...$params): \Message {}
+
+    function wfTimestampNow(): string {}
+
+    class StatusValue
+    {
+        public static function newGood(mixed $value = null): static {}
+    }
 
     class RepoGroup
     {
@@ -218,6 +209,7 @@ namespace {
     class Language
     {
         public function getHtmlCode(): string {}
+        public function getCode(): string {}
     }
 
 }
@@ -269,6 +261,7 @@ namespace MediaWiki\Output {
         public function getTitle(): \MediaWiki\Title\Title {}
         public function headElement(\SkinTemplate $skin): string {}
         public function getBottomScripts(): string {}
+        public function addHeadItem(string $name, string $value): void {}
     }
 
 }
@@ -297,6 +290,10 @@ namespace MediaWiki\Html {
         public static function rawElement(string $element, array $attribs = [], string $contents = ''): string {}
         /** @param array<string, mixed> $attribs */
         public static function hidden(string $name, string $value, array $attribs = []): string {}
+        /**
+         * @param array<int|string, mixed> $attribs
+         */
+        public static function element(string $element, array $attribs = [], string $contents = ''): string {}
     }
 
 }
@@ -317,6 +314,7 @@ namespace MediaWiki\Parser {
     class Sanitizer
     {
         public static function escapeIdForAttribute(string $id, int $mode = 0): string {}
+        public static function validateEmail(string $addr): bool {}
     }
 
 }
@@ -411,6 +409,19 @@ namespace MediaWiki\ResourceLoader {
 
 namespace MediaWiki\Request {
 
+    class WebRequest
+    {
+        /** @return string[] */
+        public function getValueNames(): array {}
+        public function getVal(string $name, mixed $default = null): mixed {}
+        public function getCheck(string $name): bool {}
+        public function getIP(): string {}
+        /**
+         * @return array<string, string>
+         */
+        public function getAllHeaders(): array {}
+    }
+
     class FauxRequest extends \WebRequest
     {
         /** @param mixed[] $data */
@@ -488,6 +499,190 @@ namespace Aws\S3 {
         public function getObject(array $args): \Aws\Result {}
         /** @param mixed[] $args */
         public function putObject(array $args): \Aws\Result {}
+    }
+
+}
+
+namespace MediaWiki\User {
+
+    class User
+    {
+        public function isAllowed(string $permission): bool {}
+        public function isRegistered(): bool {}
+        public function getName(): string {}
+        public function getEmail(): string {}
+        public function getEmailAuthenticationTimestamp(): ?string {}
+        public function setEmail(string $str): void {}
+        public function setEmailAuthenticationTimestamp(?string $timestamp): void {}
+        public function saveSettings(): void {}
+        public function getInstanceFromPrimary(int $loadFlags = 1): ?self {}
+    }
+
+    interface UserRigorOptions
+    {
+        public const RIGOR_CREATABLE = 'creatable';
+        public const RIGOR_USABLE = 'usable';
+        public const RIGOR_VALID = 'valid';
+        public const RIGOR_NONE = 'none';
+    }
+
+    class UserNameUtils implements UserRigorOptions
+    {
+        public function getCanonical(string $name, string $validate = self::RIGOR_VALID): string|false {}
+    }
+
+}
+
+namespace MediaWiki\Message {
+
+    class Message
+    {
+        public function inContentLanguage(): self {}
+        public function text(): string {}
+        public function exists(): bool {}
+        public function escaped(): string {}
+        public static function plaintextParam(string $plaintext): mixed {}
+    }
+
+}
+
+namespace MediaWiki\Language {
+
+    class RawMessage extends \MediaWiki\Message\Message
+    {
+        /**
+         * @param mixed[] $params
+         */
+        public function __construct(string $text, array $params = []) {}
+    }
+
+}
+
+namespace MediaWiki\HTMLForm {
+
+    class HTMLForm
+    {
+        public function getOutput(): \MediaWiki\Output\OutputPage {}
+        public function getLanguage(): \Language {}
+    }
+
+    abstract class HTMLFormField
+    {
+        /**
+         * @var string
+         */
+        protected $mName;
+
+        public ?HTMLForm $mParent = null;
+
+        /**
+         * @param array<string, mixed> $params
+         */
+        public function __construct($params) {}
+
+        /**
+         * @param mixed $value
+         * @return string
+         */
+        abstract public function getInputHTML($value);
+    }
+
+}
+
+namespace MediaWiki\Auth {
+
+    class AuthManager
+    {
+        public const ACTION_LOGIN = 'login';
+
+        public function getRequest(): \MediaWiki\Request\WebRequest {}
+        public function getAuthenticationSessionData(string $key, mixed $default = null): mixed {}
+        public function setAuthenticationSessionData(string $key, mixed $data): void {}
+        public function removeAuthenticationSessionData(?string $key): void {}
+    }
+
+    abstract class AuthenticationRequest
+    {
+        public const OPTIONAL = 0;
+        public const REQUIRED = 1;
+        public const PRIMARY_REQUIRED = 2;
+
+        public int $required = self::REQUIRED;
+
+        public ?string $username = null;
+
+        /**
+         * @return array<string, array<string, mixed>>
+         */
+        abstract public function getFieldInfo();
+
+        /**
+         * @template T of AuthenticationRequest
+         * @param AuthenticationRequest[] $reqs
+         * @param class-string<T> $class
+         * @return T|null
+         */
+        public static function getRequestByClass(array $reqs, string $class, bool $allowSubclasses = false) {}
+    }
+
+    class PasswordAuthenticationRequest extends AuthenticationRequest
+    {
+        public ?string $password = null;
+
+        /**
+         * @return array<string, array<string, mixed>>
+         */
+        public function getFieldInfo() {}
+    }
+
+    class AuthenticationResponse
+    {
+        public const PASS = 'PASS';
+        public const FAIL = 'FAIL';
+        public const ABSTAIN = 'ABSTAIN';
+
+        public string $status;
+
+        public static function newPass(?string $username = null): self {}
+        /**
+         * @param string[] $failReasons
+         */
+        public static function newFail(\MediaWiki\Message\Message $msg, array $failReasons = []): self {}
+        public static function newAbstain(): self {}
+    }
+
+    interface PrimaryAuthenticationProvider
+    {
+        public const TYPE_CREATE = 'create';
+        public const TYPE_LINK = 'link';
+        public const TYPE_NONE = 'none';
+    }
+
+    abstract class AbstractPrimaryAuthenticationProvider implements PrimaryAuthenticationProvider
+    {
+        protected \Psr\Log\LoggerInterface $logger;
+
+        protected AuthManager $manager;
+
+        protected \MediaWiki\User\UserNameUtils $userNameUtils;
+
+        public function getUniqueId(): string {}
+    }
+
+}
+
+namespace MediaWiki\SpecialPage\Hook {
+
+    interface AuthChangeFormFieldsHook
+    {
+        /**
+         * @param \MediaWiki\Auth\AuthenticationRequest[] $requests
+         * @param array<string, array<string, mixed>> $fieldInfo
+         * @param array<string, array<string, mixed>> $formDescriptor
+         * @param string $action
+         * @return bool|void
+         */
+        public function onAuthChangeFormFields($requests, $fieldInfo, &$formDescriptor, $action);
     }
 
 }
