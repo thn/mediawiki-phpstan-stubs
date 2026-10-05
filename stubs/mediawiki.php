@@ -208,7 +208,7 @@ namespace MediaWiki\Title {
         public function getLocalURL(): string {}
         public function getPrefixedURL(): string {}
         public function getArticleID(): int {}
-        public function getPageViewLanguage(): \Language {}
+        public function getPageLanguage(): \Language {}
     }
 
 }
