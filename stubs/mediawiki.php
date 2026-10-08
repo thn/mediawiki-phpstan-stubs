@@ -231,6 +231,11 @@ namespace MediaWiki {
     class MainConfigNames
     {
         public const EnableBotPasswords = 'EnableBotPasswords';
+        public const RevokePermissions = 'RevokePermissions';
+        public const AddGroups = 'AddGroups';
+        public const RemoveGroups = 'RemoveGroups';
+        public const GroupsAddToSelf = 'GroupsAddToSelf';
+        public const GroupsRemoveFromSelf = 'GroupsRemoveFromSelf';
     }
 
 }
@@ -240,6 +245,7 @@ namespace MediaWiki\Settings {
     class SettingsBuilder
     {
         public function overrideConfigValue(string $key, mixed $value): self {}
+        public function putConfigValue(string $key, mixed $value): self {}
     }
 
 }
@@ -514,6 +520,12 @@ namespace MediaWiki\Content {
 
 namespace Wikimedia\Rdbms {
 
+    interface IDBAccessObject
+    {
+        public const READ_NORMAL = 0;
+        public const READ_LATEST = 1;
+    }
+
     interface IConnectionProvider
     {
         public function getReplicaDatabase(): \Wikimedia\Rdbms\IReadableDatabase;
@@ -584,6 +596,23 @@ namespace MediaWiki\User {
         public function getInstanceFromPrimary(int $loadFlags = 1): ?self {}
         public function getRequest(): \MediaWiki\Request\WebRequest {}
         public function doLogout(): void {}
+        public function getUserPage(): \MediaWiki\Title\Title {}
+        public function invalidateCache(): void {}
+    }
+
+    class UserGroupManager
+    {
+        /**
+         * @return string[]
+         */
+        public function listAllGroups(): array {}
+
+        /**
+         * @return string[]
+         */
+        public function getUserGroups(User $user, int $queryFlags = \Wikimedia\Rdbms\IDBAccessObject::READ_NORMAL): array {}
+        public function addUserToGroup(User $user, string $group, ?string $expiry = null, bool $allowUpdate = false): bool {}
+        public function removeUserFromGroup(User $user, string $group): bool {}
     }
 
     interface UserRigorOptions
@@ -632,6 +661,25 @@ namespace MediaWiki\Api {
 namespace MediaWiki\Actions {
 
     class ActionEntryPoint {}
+
+}
+
+namespace MediaWiki\Logging {
+
+    class ManualLogEntry
+    {
+        public function __construct(string $type, string $subtype) {}
+        public function setPerformer(\MediaWiki\User\User $performer): void {}
+        public function setTarget(\MediaWiki\Title\Title $target): void {}
+        public function setComment(string $comment): void {}
+
+        /**
+         * @param array<string, mixed> $parameters
+         */
+        public function setParameters(array $parameters): void {}
+        public function insert(): int {}
+        public function publish(int $newId, string $to = 'rcandudp'): void {}
+    }
 
 }
 
