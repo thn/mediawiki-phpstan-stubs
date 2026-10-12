@@ -417,6 +417,12 @@ namespace MediaWiki\Permissions {
     class GroupPermissionsLookup
     {
         public function groupHasPermission(string $group, string $permission): bool {}
+
+        /**
+         * @param string[] $groups
+         * @return string[]
+         */
+        public function getGroupPermissions(array $groups): array {}
     }
 
     interface Authority
@@ -467,6 +473,66 @@ namespace MediaWiki\Context {
     {
         public static function getMain(): self {}
         public function getUser(): \User {}
+        public function getRequest(): \MediaWiki\Request\WebRequest {}
+    }
+
+}
+
+namespace MediaWiki\Exception {
+
+    class PermissionsError extends \Exception
+    {
+        public function __construct(?string $permission, mixed $status = []) {}
+    }
+
+}
+
+namespace Wikimedia\Message {
+
+    interface MessageSpecifier {}
+
+    class MessageValue
+    {
+        public static function newFromSpecifier(MessageSpecifier $spec): self {}
+    }
+
+}
+
+namespace MediaWiki\Rest {
+
+    interface RequestInterface {}
+
+    abstract class Handler {}
+
+    class HttpException extends \Exception {}
+
+    class LocalizedHttpException extends HttpException
+    {
+        /**
+         * @param mixed[] $errorData
+         */
+        public function __construct(\Wikimedia\Message\MessageValue $messageValue, int $code = 500, array $errorData = []) {}
+    }
+
+}
+
+namespace MediaWiki\Rest\Module {
+
+    abstract class Module {}
+
+}
+
+namespace MediaWiki\Rest\Hook {
+
+    interface RestCheckCanExecuteHook
+    {
+        public function onRestCheckCanExecute(
+            \MediaWiki\Rest\Module\Module $module,
+            \MediaWiki\Rest\Handler $handler,
+            string $path,
+            \MediaWiki\Rest\RequestInterface $request,
+            ?\MediaWiki\Rest\HttpException &$error
+        ): bool;
     }
 
 }
@@ -621,6 +687,11 @@ namespace MediaWiki\User {
          * @return string[]
          */
         public function getUserGroups(User $user, int $queryFlags = \Wikimedia\Rdbms\IDBAccessObject::READ_NORMAL): array {}
+
+        /**
+         * @return string[]
+         */
+        public function getUserEffectiveGroups(User $user, int $queryFlags = \Wikimedia\Rdbms\IDBAccessObject::READ_NORMAL, bool $recache = false): array {}
         public function addUserToGroup(User $user, string $group, ?string $expiry = null, bool $allowUpdate = false): bool {}
         public function removeUserFromGroup(User $user, string $group): bool {}
     }
@@ -649,6 +720,7 @@ namespace MediaWiki\Session {
         public function remove(string $key): void {}
         public function shouldRememberUser(): bool {}
         public function getProvider(): SessionProvider {}
+        public function getUser(): \MediaWiki\User\User {}
     }
 
     abstract class SessionProvider
@@ -656,14 +728,45 @@ namespace MediaWiki\Session {
         public function getRememberUserDuration(): ?int {}
     }
 
+    class BotPasswordSessionProvider extends SessionProvider {}
+
 }
 
 namespace MediaWiki\Api {
 
-    class ApiMain
+    abstract class ApiBase
     {
         public function getRequest(): \MediaWiki\Request\WebRequest {}
         public function getUser(): \MediaWiki\User\User {}
+    }
+
+    class ApiMain extends ApiBase
+    {
+        public function getRequest(): \MediaWiki\Request\WebRequest {}
+        public function getUser(): \MediaWiki\User\User {}
+    }
+
+    class ApiLogin extends ApiBase {}
+
+    class ApiUsageException extends \Exception
+    {
+        /**
+         * @param mixed[]|null $data
+         */
+        public static function newWithMessage(?ApiBase $module, mixed $msg, ?string $code = null, ?array $data = null, int $httpCode = 0, ?\Throwable $previous = null): static {}
+    }
+
+}
+
+namespace MediaWiki\Api\Hook {
+
+    interface APIAfterExecuteHook
+    {
+        /**
+         * @param \MediaWiki\Api\ApiBase $module
+         * @return bool|void
+         */
+        public function onAPIAfterExecute($module);
     }
 
 }
@@ -704,7 +807,7 @@ namespace MediaWiki\Logger {
 
 namespace MediaWiki\Message {
 
-    class Message
+    class Message implements \Wikimedia\Message\MessageSpecifier
     {
         public function inContentLanguage(): self {}
         public function text(): string {}
@@ -840,6 +943,22 @@ namespace MediaWiki\Auth {
 
 }
 
+namespace MediaWiki\Auth\Hook {
+
+    interface AuthManagerLoginAuthenticateAuditHook
+    {
+        /**
+         * @param \MediaWiki\Auth\AuthenticationResponse $response
+         * @param \MediaWiki\User\User|null $user
+         * @param string|null $username
+         * @param string[] $extraData
+         * @return bool|void
+         */
+        public function onAuthManagerLoginAuthenticateAudit($response, $user, $username, $extraData);
+    }
+
+}
+
 namespace MediaWiki\SpecialPage {
 
     class SpecialPage
@@ -862,6 +981,16 @@ namespace MediaWiki\SpecialPage\Hook {
          * @return bool|void
          */
         public function onAuthChangeFormFields($requests, $fieldInfo, &$formDescriptor, $action);
+    }
+
+    interface SpecialPageBeforeExecuteHook
+    {
+        /**
+         * @param \MediaWiki\SpecialPage\SpecialPage $special
+         * @param string|null $subPage
+         * @return bool|void
+         */
+        public function onSpecialPageBeforeExecute($special, $subPage);
     }
 
 }
