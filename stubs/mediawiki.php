@@ -840,6 +840,16 @@ namespace MediaWiki\Auth {
 
 }
 
+namespace MediaWiki\SpecialPage {
+
+    class SpecialPage
+    {
+        public function getName(): string {}
+        public function getUser(): \MediaWiki\User\User {}
+    }
+
+}
+
 namespace MediaWiki\SpecialPage\Hook {
 
     interface AuthChangeFormFieldsHook
