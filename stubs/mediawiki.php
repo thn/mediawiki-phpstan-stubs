@@ -461,6 +461,16 @@ namespace MediaWiki\ResourceLoader {
 
 }
 
+namespace MediaWiki\Context {
+
+    class RequestContext
+    {
+        public static function getMain(): self {}
+        public function getUser(): \User {}
+    }
+
+}
+
 namespace MediaWiki\Request {
 
     class WebRequest
