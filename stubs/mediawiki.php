@@ -994,3 +994,15 @@ namespace MediaWiki\SpecialPage\Hook {
     }
 
 }
+
+namespace OOUI {
+
+    class ButtonInputWidget
+    {
+        /**
+         * @param array<string, mixed> $config
+         */
+        public function __construct(array $config = []) {}
+    }
+
+}
