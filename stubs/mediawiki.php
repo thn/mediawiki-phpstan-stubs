@@ -428,6 +428,7 @@ namespace MediaWiki\Permissions {
     interface Authority
     {
         public function isRegistered(): bool;
+        public function isAllowed(string $permission): bool;
     }
 
 }
@@ -736,9 +737,21 @@ namespace MediaWiki\Api {
 
     abstract class ApiBase
     {
+        public function getModuleName(): string {}
         public function getRequest(): \MediaWiki\Request\WebRequest {}
         public function getUser(): \MediaWiki\User\User {}
+        public function getAuthority(): \MediaWiki\Permissions\Authority {}
+
+        /**
+         * @param array<string, mixed>|bool $options
+         * @return array<string, mixed>
+         */
+        public function extractRequestParams(array|bool $options = []): array {}
     }
+
+    abstract class ApiQueryBase extends ApiBase {}
+
+    class ApiQuerySiteinfo extends ApiQueryBase {}
 
     class ApiMain extends ApiBase
     {
@@ -965,6 +978,7 @@ namespace MediaWiki\SpecialPage {
     {
         public function getName(): string {}
         public function getUser(): \MediaWiki\User\User {}
+        public function getAuthority(): \MediaWiki\Permissions\Authority {}
     }
 
 }
